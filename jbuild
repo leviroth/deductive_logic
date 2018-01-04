@@ -1,0 +1,11 @@
+(jbuild_version 1)
+
+(executables
+ ((names        (main))
+  (flags (:standard -short-paths))
+  (preprocess (pps (ppx_jane)))
+  (libraries (base stdio))))
+
+(ocamllex (lexer))
+
+(menhir ((modules (parser))))

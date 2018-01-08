@@ -61,6 +61,30 @@ let%test_module "model tests" = (
     let%test "check model completeness" =
       let model = Model.of_alist_exn ['p', true] in
       Option.is_none @@ Model.eval model @@ parse_string "p & q"
+
+    let%test "letters_used" =
+      let test_cases = [
+        "p", ['p'];
+        "(p)", ['p'];
+        "p & q", ['p'; 'q'];
+        "-p", ['p'];
+        "p & q & p", ['p'; 'q'];
+      ]
+      in
+      List.for_all test_cases ~f:(fun (formula, expected) ->
+          let letters =
+            formula
+            |> parse_string
+            |> Model.letters_used
+            |> Set.to_list in
+          [%compare.equal: char list] letters expected)
+
+    let%test "all" =
+      let test_expressions = List.map ["p"; "q";] ~f:parse_string in
+      let models = Model.all test_expressions in
+      List.for_all models ~f:(fun model ->
+          Option.is_some @@ Model.eval model @@ parse_string "p & q")
+      && List.length models = 4
   end)
 
 let () =

@@ -7,10 +7,10 @@
 %token NEG
 %token EOF
 
-%nonassoc NEG
-%left CONJ
-%left DISJ
 %right COND
+%left DISJ
+%left CONJ
+%nonassoc NEG
 
 %start <Expression.t> line
 %%

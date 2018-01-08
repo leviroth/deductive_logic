@@ -12,6 +12,7 @@ let%test_module "parser tests" = (
       |> Parser.line Lexer.read
 
     let%test _ = equal (parse_string "-(p & q)") (Neg (Conj (Prop 'p', Prop 'q')))
+    let%test _ = equal (parse_string "-p & q") (Conj (Neg (Prop 'p'), (Prop 'q')))
   end)
 
 let () =

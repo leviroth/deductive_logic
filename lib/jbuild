@@ -1,10 +1,10 @@
 (jbuild_version 1)
 
-(executables
- ((names        (main))
+(library
+ ((name deductive_logic)
   (flags (:standard -short-paths))
-  (preprocess (pps (ppx_jane)))
-  (libraries (base stdio))))
+  (libraries (base))
+  (preprocess (pps (ppx_jane)))))
 
 (ocamllex (lexer))
 

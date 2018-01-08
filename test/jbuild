@@ -1,0 +1,14 @@
+(jbuild_version 1)
+
+(executable
+ ((name test)
+  (libraries (deductive_logic
+              ppx_inline_test.runner.lib))
+  (preprocess (pps (ppx_inline_test
+                    ppx_jane
+                    ppx_driver.runner (-inline-test-lib test))))))
+
+(alias
+ ((name runtest)
+  (deps (test.exe))
+  (action (run ${<} inline-test-runner test))))

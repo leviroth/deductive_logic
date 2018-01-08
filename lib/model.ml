@@ -46,3 +46,13 @@ let all expressions =
     |> Set.to_list
   in
   aux letters [Map.empty (module Char)]
+
+let implies premises conclusion =
+  let models = all (conclusion :: premises) in
+  let satisfying_models =
+    List.filter models ~f:(fun model ->
+        List.for_all premises ~f:(fun expr ->
+            Option.value_exn (eval model expr)))
+  in
+  List.for_all satisfying_models ~f:(fun model ->
+      Option.value_exn (eval model conclusion))

@@ -85,6 +85,16 @@ let%test_module "model tests" = (
       List.for_all models ~f:(fun model ->
           Option.is_some @@ Model.eval model @@ parse_string "p & q")
       && List.length models = 4
+
+    let%test "implies (positive)" =
+      let premises = List.map ~f:parse_string ["p"; "p -> q"] in
+      let conclusion = parse_string "q" in
+      Model.implies premises conclusion
+
+    let%test "implies (negative)" =
+      let premises = List.map ~f:parse_string ["p"; "p -> q"] in
+      let conclusion = parse_string "-q" in
+      not @@ Model.implies premises conclusion
   end)
 
 let () =

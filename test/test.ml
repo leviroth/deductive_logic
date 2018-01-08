@@ -29,6 +29,19 @@ let%test_module "parser tests" = (
             |> Expression.t_of_sexp
           in
           Expression.equal (parse_string formula) expected)
+
+    let%test _ =
+      let line = "[1] 1. p -> q  PI" |> Lexing.from_string |> Parser.deduction_line_only Lexer.read
+      in
+      [%compare.equal: Deduction.Line.t]
+        line
+        Deduction.Line.{
+          premises = Set.singleton (module Int) 1;
+          number = 1;
+          expr = parse_string "p -> q";
+          citations = [| |];
+          rule = Deduction.PI;
+        }
   end)
 
 let%test_module "model tests" = (

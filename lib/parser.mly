@@ -12,10 +12,10 @@
 %left CONJ
 %nonassoc NEG
 
-%start <Expression.t> line
+%start <Expression.t> expr_only
 %%
 
-line:
+expr_only:
 | e = expr; EOF; { e }
 
 expr:

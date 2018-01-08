@@ -4,7 +4,7 @@ open Deductive_logic
 let parse_string s =
   s
   |> Lexing.from_string
-  |> Parser.line Lexer.read
+  |> Parser.expr_only Lexer.read
 
 
 let%test_module "parser tests" = (

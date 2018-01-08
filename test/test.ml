@@ -10,8 +10,6 @@ let parse_string s =
 let%test_module "parser tests" = (
   module
   struct
-    let equal = [%compare.equal: Expression.t]
-
     let%test _ =
       let test_cases = [
         "p", "(Prop p)";
@@ -30,7 +28,7 @@ let%test_module "parser tests" = (
             |> Sexplib.Sexp.of_string
             |> Expression.t_of_sexp
           in
-          equal (parse_string formula) expected)
+          Expression.equal (parse_string formula) expected)
   end)
 
 let%test_module "model tests" = (

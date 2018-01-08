@@ -7,10 +7,10 @@ let parse_string s =
   |> Parser.expr_only Lexer.read
 
 
-let%test_module "parser tests" = (
+let%test_module "Parser tests" = (
   module
   struct
-    let%test _ =
+    let%test "Expression parser" =
       let test_cases = [
         "p", "(Prop p)";
         "(p)", "(Prop p)";
@@ -30,24 +30,42 @@ let%test_module "parser tests" = (
           in
           Expression.equal (parse_string formula) expected)
 
-    let%test _ =
-      let line = "[1] 1. p -> q  PI" |> Lexing.from_string |> Parser.deduction_line_only Lexer.read
-      in
-      [%compare.equal: Deduction.Line.t]
-        line
+    let%test "Deduction parser" =
+      let test_cases = [
+        "[1] 1. p -> q PI",
         Deduction.Line.{
           premises = Set.singleton (module Int) 1;
           number = 1;
           expr = parse_string "p -> q";
           citations = [| |];
           rule = Deduction.PI;
-        }
+        };
+
+        "[2] 3. p -> q 1, 2 CI",
+        Deduction.Line.{
+          premises = Set.singleton (module Int) 2;
+          number = 3;
+          expr = parse_string "p -> q";
+          citations = [| 1; 2 |];
+          rule = Deduction.CI;
+        };
+      ]
+      in
+      List.for_all test_cases ~f:(fun (line_string, expected) ->
+          let line =
+            line_string
+            |> Lexing.from_string
+            |> Parser.deduction_line_only Lexer.read
+          in
+          [%compare.equal: Deduction.Line.t]
+            line
+            expected)
   end)
 
-let%test_module "model tests" = (
+let%test_module "Model tests" = (
   module
   struct
-    let%test "correct evaluation" =
+    let%test "Correct evaluation" =
       let model = Model.of_alist_exn ['p', true; 'q', false] in
       let test_cases = [
         "p", true;
@@ -69,11 +87,11 @@ let%test_module "model tests" = (
           in
           Bool.equal value expected)
 
-    let%test "check model completeness" =
+    let%test "Check model completeness" =
       let model = Model.of_alist_exn ['p', true] in
       Option.is_none @@ Model.eval model @@ parse_string "p & q"
 
-    let%test "letters_used" =
+    let%test "Letters_used" =
       let test_cases = [
         "p", ['p'];
         "(p)", ['p'];
@@ -90,19 +108,19 @@ let%test_module "model tests" = (
             |> Set.to_list in
           [%compare.equal: char list] letters expected)
 
-    let%test "all" =
+    let%test "All" =
       let test_expressions = List.map ["p"; "q";] ~f:parse_string in
       let models = Model.all test_expressions in
       List.for_all models ~f:(fun model ->
           Option.is_some @@ Model.eval model @@ parse_string "p & q")
       && List.length models = 4
 
-    let%test "implies (positive)" =
+    let%test "Implies (positive)" =
       let premises = List.map ~f:parse_string ["p"; "p -> q"] in
       let conclusion = parse_string "q" in
       Model.implies premises conclusion
 
-    let%test "implies (negative)" =
+    let%test "Implies (negative)" =
       let premises = List.map ~f:parse_string ["p"; "p -> q"] in
       let conclusion = parse_string "-q" in
       not @@ Model.implies premises conclusion

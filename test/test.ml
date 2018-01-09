@@ -20,9 +20,9 @@ let%test_module "Parser tests" = (
         "-p", "(Neg (Prop p))";
         "-(p & q)", "(Neg (Conj (Prop p) (Prop q)))";
         "-p & q", "(Conj (Neg (Prop p)) (Prop q))";
-        "Axp", "(Forall x (Prop p))";
-        "F(x)", "(Relation F (x))";
-        "Ax (F(x) | -F(x))", "(Forall x (Disj (Relation F (x)) (Neg (Relation F (x)))))"
+        "Ax p", "(Forall x (Prop p))";
+        "Fx", "(Relation F (x))";
+        "Ax (Fx | -Fx)", "(Forall x (Disj (Relation F (x)) (Neg (Relation F (x)))))"
       ]
       in
       List.for_all test_cases ~f:(fun (formula, sexp) ->
@@ -53,11 +53,11 @@ let%test_module "Parser tests" = (
           rule = Deduction.CI;
         };
 
-        "[2] 3. Ax F(x) | p 1, 2 CI",
+        "[2] 3. Ax Fx | p 1, 2 CI",
         Deduction.Line.{
           premises = Set.singleton (module Int) 2;
           number = 3;
-          expr = parse_string "Ax F(x) | p";
+          expr = parse_string "Ax Fx | p";
           citations = [| 1; 2 |];
           rule = Deduction.CI;
         };
@@ -136,8 +136,8 @@ let%test_module "Model tests" = (
       Model.implies premises conclusion
 
     let%test "Implies (FOL)" =
-      let premises = List.map ~f:parse_string ["F(x)"; "F(x) -> G(x)"] in
-      let conclusion = parse_string "G(x)" in
+      let premises = List.map ~f:parse_string ["Fx"; "Fx -> Gx"] in
+      let conclusion = parse_string "Gx" in
       Model.implies premises conclusion
 
     let%test "Implies (negative)" =

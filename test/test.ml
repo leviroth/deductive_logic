@@ -12,14 +12,17 @@ let%test_module "Parser tests" = (
   struct
     let%test "Expression parser" =
       let test_cases = [
-        "p", "(Prop p)";
-        "(p)", "(Prop p)";
-        "p & q", "(Conj (Prop p) (Prop q))";
-        "p | q", "(Disj (Prop p) (Prop q))";
-        "p -> q", "(Cond (Prop p) (Prop q))";
-        "-p", "(Neg (Prop p))";
-        "-(p & q)", "(Neg (Conj (Prop p) (Prop q)))";
-        "-p & q", "(Conj (Neg (Prop p)) (Prop q))";
+        "p", "(Atom (Prop p))";
+        "(p)", "(Atom (Prop p))";
+        "p & q", "(Conj (Atom (Prop p)) (Atom (Prop q)))";
+        "p | q", "(Disj (Atom (Prop p)) (Atom (Prop q)))";
+        "p -> q", "(Cond (Atom (Prop p)) (Atom (Prop q)))";
+        "-p", "(Neg (Atom (Prop p)))";
+        "-(p & q)", "(Neg (Conj (Atom (Prop p)) (Atom (Prop q))))";
+        "-p & q", "(Conj (Neg (Atom (Prop p))) (Atom (Prop q)))";
+        "Axp", "(Forall x (Atom (Prop p)))";
+        "F(x)", "(Atom (Relation F (x)))";
+        "Ax (F(x) | -F(x))", "(Forall x (Disj (Atom (Relation F (x))) (Neg (Atom (Relation F (x))))))"
       ]
       in
       List.for_all test_cases ~f:(fun (formula, sexp) ->
@@ -49,6 +52,15 @@ let%test_module "Parser tests" = (
           citations = [| 1; 2 |];
           rule = Deduction.CI;
         };
+
+        "[2] 3. Ax F(x) | p 1, 2 CI",
+        Deduction.Line.{
+          premises = Set.singleton (module Int) 2;
+          number = 3;
+          expr = parse_string "Ax F(x) | p";
+          citations = [| 1; 2 |];
+          rule = Deduction.CI;
+        };
       ]
       in
       List.for_all test_cases ~f:(fun (line_string, expected) ->
@@ -66,7 +78,7 @@ let%test_module "Model tests" = (
   module
   struct
     let%test "Correct evaluation" =
-      let model = Model.of_alist_exn ['p', true; 'q', false] in
+      let model = Model.of_alist_exn [Expression.Atom.Prop 'p', true; Expression.Atom.Prop 'q', false] in
       let test_cases = [
         "p", true;
         "(p)", true;
@@ -88,7 +100,7 @@ let%test_module "Model tests" = (
           Bool.equal value expected)
 
     let%test "Check model completeness" =
-      let model = Model.of_alist_exn ['p', true] in
+      let model = Model.of_alist_exn [Expression.Atom.Prop 'p', true] in
       Option.is_none @@ Model.eval model @@ parse_string "p & q"
 
     let%test "Letters_used" =
@@ -100,13 +112,14 @@ let%test_module "Model tests" = (
         "p & q & p", ['p'; 'q'];
       ]
       in
-      List.for_all test_cases ~f:(fun (formula, expected) ->
+      List.for_all test_cases ~f:(fun (formula, expected_letters) ->
           let letters =
             formula
             |> parse_string
             |> Model.letters_used
-            |> Set.to_list in
-          [%compare.equal: char list] letters expected)
+            |> Set.to_list
+          in let expected = List.map expected_letters ~f:(fun c -> Expression.Atom.Prop c) in
+          [%compare.equal: Expression.Atom.t list] letters expected)
 
     let%test "All" =
       let test_expressions = List.map ["p"; "q";] ~f:parse_string in
@@ -118,6 +131,11 @@ let%test_module "Model tests" = (
     let%test "Implies (positive)" =
       let premises = List.map ~f:parse_string ["p"; "p -> q"] in
       let conclusion = parse_string "q" in
+      Model.implies premises conclusion
+
+    let%test "Implies (FOL)" =
+      let premises = List.map ~f:parse_string ["F(x)"; "F(x) -> G(x)"] in
+      let conclusion = parse_string "G(x)" in
       Model.implies premises conclusion
 
     let%test "Implies (negative)" =

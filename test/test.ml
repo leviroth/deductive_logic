@@ -21,6 +21,7 @@ let%test_module "Parser tests" = (
         "-(p & q)", "(Neg (Conj (Prop p) (Prop q)))";
         "-p & q", "(Conj (Neg (Prop p)) (Prop q))";
         "Ax p", "(Forall x (Prop p))";
+        "Axp", "(Forall x (Prop p))";
         "Fx", "(Relation F (x))";
         "Ax (Fx | -Fx)", "(Forall x (Disj (Relation F (x)) (Neg (Relation F (x)))))"
       ]

@@ -11,7 +11,24 @@ module Line = struct
 
   let get_line deduction n = deduction.(n - 1)
 
+  let validate_citations deduction line =
+    let expected_number =
+      match line.rule with
+      | PI -> 0
+      | JE | DI -> 1
+      | CI | CE | JI | DE -> 2
+      | NI | NE -> 3
+    in
+    let citation_count = Array.length line.citations in
+    if citation_count <> expected_number
+    then
+    Or_error.errorf "Expected %d citations but received %d" expected_number citation_count
+    else match Array.find line.citations ~f:(fun n -> n > Array.length deduction) with
+      | Some n -> Or_error.errorf "Citation of nonexistent line %d" n
+      | None -> Ok ()
+
   let correct deduction line =
+    Or_error.map (validate_citations deduction line) ~f:(fun () ->
     match line.rule with
     | PI ->
       let expected_premises = Set.singleton (module Int) line.number in
@@ -89,9 +106,13 @@ module Line = struct
       && (match a.expr with
           | Disj (x, y) -> Expression.equal b.expr (Expression.Neg x)
                            || Expression.equal b.expr (Expression.Neg y)
-          | _ -> false)
+          | _ -> false))
 end
 
 type t = Line.t array
 
-let valid t = Array.for_all t ~f:(Line.correct t)
+let validate t =
+  Array.to_list t
+  |> List.map ~f:(Line.correct t)
+  |> Or_error.all
+  |> Or_error.map ~f:(List.for_all ~f:Fn.id)

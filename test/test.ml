@@ -23,6 +23,7 @@ let%test_module "Parser tests" = (
         "Ax p", "(Forall x (Prop p))";
         "Axp", "(Forall x (Prop p))";
         "Fx", "(Relation F (x))";
+        "Fxy", "(Relation F (x y))";
         "Ax (Fx | -Fx)", "(Forall x (Disj (Relation F (x)) (Neg (Relation F (x)))))"
       ]
       in

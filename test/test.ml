@@ -222,9 +222,51 @@ let%test_module "Deduction test" = (
         "[2] 2. -p PI";
         "[1, 2] 3. q 1, 2 DE";
       |]
-  end
-)
+  end)
 
+let%test_module "FOL test" = (
+  module
+  struct
+    let%test_module "create_instance" = (
+      module
+      struct
+        let%test "basic" =
+          let formula = parse_string "Ax Fx" in
+          let instance = Fol.create_instance formula 'y' in
+          Expression.equal instance @@ parse_string "Fy"
+
+        let%test "Bound occurrence" =
+          let formula = parse_string "Ax Ax Fx" in
+          let instance = Fol.create_instance formula 'y' in
+          Expression.equal instance @@ parse_string "Ax Fx"
+
+        let%test "Replacement would be bound" =
+          let formula = parse_string "Ax Ay Fx" in
+          let instance = Fol.create_instance formula 'y' in
+          Expression.equal instance @@ parse_string "Ay Fx"
+      end)
+
+    let%test_module "free_variables" = (
+      module
+      struct
+        let test = fun input expected ->
+          input
+          |> parse_string
+          |> Fol.free_variables
+          |> [%compare.equal: char list] expected
+
+        let%test "basic" =
+          test "Fx" ['x']
+
+        let%test "Bound occurrence" =
+          test "Ax Ax Fx" []
+
+        let%test "Multiple" =
+          test "Ax Fy & Gz" ['y'; 'z']
+      end
+    )
+
+  end)
 
 let () =
   Ppx_inline_test_lib.Runtime.exit ()

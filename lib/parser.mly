@@ -80,14 +80,11 @@ expr_only:
 | e = expr; EOF; { e }
 
 expr:
-| a = atom; { Expression.Atom a }
+| p = PROP { Expression.Prop p }
+| r = RELATION { let f, l = r in Expression.Relation (f, l) }
 | LPAREN; e = expr; RPAREN; { e }
 | e1 = expr; COND; e2 = expr;  { Expression.Cond (e1, e2) }
 | e1 = expr; CONJ; e2 = expr;  { Expression.Conj (e1, e2) }
 | e1 = expr; DISJ; e2 = expr;  { Expression.Disj (e1, e2) }
 | NEG; e = expr;  { Expression.Neg e }
 | v = FORALL; e = expr; { Expression.Forall (v, e) }
-
-atom:
-| p = PROP { Expression.Atom.Prop p }
-| r = RELATION { let f, l = r in Expression.Atom.Relation (f, l) }

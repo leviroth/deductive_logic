@@ -12,17 +12,17 @@ let%test_module "Parser tests" = (
   struct
     let%test "Expression parser" =
       let test_cases = [
-        "p", "(Atom (Prop p))";
-        "(p)", "(Atom (Prop p))";
-        "p & q", "(Conj (Atom (Prop p)) (Atom (Prop q)))";
-        "p | q", "(Disj (Atom (Prop p)) (Atom (Prop q)))";
-        "p -> q", "(Cond (Atom (Prop p)) (Atom (Prop q)))";
-        "-p", "(Neg (Atom (Prop p)))";
-        "-(p & q)", "(Neg (Conj (Atom (Prop p)) (Atom (Prop q))))";
-        "-p & q", "(Conj (Neg (Atom (Prop p))) (Atom (Prop q)))";
-        "Axp", "(Forall x (Atom (Prop p)))";
-        "F(x)", "(Atom (Relation F (x)))";
-        "Ax (F(x) | -F(x))", "(Forall x (Disj (Atom (Relation F (x))) (Neg (Atom (Relation F (x))))))"
+        "p", "(Prop p)";
+        "(p)", "(Prop p)";
+        "p & q", "(Conj (Prop p) (Prop q))";
+        "p | q", "(Disj (Prop p) (Prop q))";
+        "p -> q", "(Cond (Prop p) (Prop q))";
+        "-p", "(Neg (Prop p))";
+        "-(p & q)", "(Neg (Conj (Prop p) (Prop q)))";
+        "-p & q", "(Conj (Neg (Prop p)) (Prop q))";
+        "Axp", "(Forall x (Prop p))";
+        "F(x)", "(Relation F (x))";
+        "Ax (F(x) | -F(x))", "(Forall x (Disj (Relation F (x)) (Neg (Relation F (x)))))"
       ]
       in
       List.for_all test_cases ~f:(fun (formula, sexp) ->
@@ -77,7 +77,7 @@ let%test_module "Parser tests" = (
 let%test_module "Model tests" = (
   module
   struct
-    let prop c = Expression.Atom (Expression.Atom.Prop c)
+    let prop c = Expression.Prop c
 
     let%test "Correct evaluation" =
       let model = Model.of_alist_exn [prop 'p', true; prop 'q', false] in

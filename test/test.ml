@@ -77,8 +77,10 @@ let%test_module "Parser tests" = (
 let%test_module "Model tests" = (
   module
   struct
+    let prop c = Expression.Atom (Expression.Atom.Prop c)
+
     let%test "Correct evaluation" =
-      let model = Model.of_alist_exn [Expression.Atom.Prop 'p', true; Expression.Atom.Prop 'q', false] in
+      let model = Model.of_alist_exn [prop 'p', true; prop 'q', false] in
       let test_cases = [
         "p", true;
         "(p)", true;
@@ -100,7 +102,7 @@ let%test_module "Model tests" = (
           Bool.equal value expected)
 
     let%test "Check model completeness" =
-      let model = Model.of_alist_exn [Expression.Atom.Prop 'p', true] in
+      let model = Model.of_alist_exn [prop 'p', true] in
       Option.is_none @@ Model.eval model @@ parse_string "p & q"
 
     let%test "Letters_used" =
@@ -118,8 +120,8 @@ let%test_module "Model tests" = (
             |> parse_string
             |> Model.letters_used
             |> Set.to_list
-          in let expected = List.map expected_letters ~f:(fun c -> Expression.Atom.Prop c) in
-          [%compare.equal: Expression.Atom.t list] letters expected)
+          in let expected = List.map expected_letters ~f:(fun c -> prop c) in
+          [%compare.equal: Expression.t list] letters expected)
 
     let%test "All" =
       let test_expressions = List.map ["p"; "q";] ~f:parse_string in

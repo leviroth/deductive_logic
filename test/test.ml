@@ -126,5 +126,81 @@ let%test_module "Model tests" = (
       not @@ Model.implies premises conclusion
   end)
 
+let%test_module "Deduction test" = (
+  module
+  struct
+    let construct_deduction = Array.map ~f:(fun s ->
+        s
+        |> Lexing.from_string
+        |> Parser.deduction_line_only Lexer.read)
+
+    let test a =
+      construct_deduction a
+      |> Deduction.valid
+
+    let%test "PI" =
+      test [|
+        "[1] 1. p -> q  PI"
+      |]
+
+    let%test "CI" =
+      test [|
+        "[1] 1. p PI";
+        "[2] 2. q PI";
+        "[2] 3. p -> q 1, 2 CI"
+      |]
+
+    let%test "CE" =
+      test [|
+        "[1] 1. p PI";
+        "[2] 2. p -> q PI";
+        "[1, 2] 3. q 1, 2 CE"
+      |]
+
+    let%test "NI" =
+      test [|
+        "[1] 1. p PI";
+        "[2] 2. -p PI";
+        "[3] 3. q PI";
+        "[1, 2] 4. -q 1, 2, 3 NI"
+      |]
+
+    let%test "NE" =
+      test [|
+        "[1] 1. p PI";
+        "[2] 2. -p PI";
+        "[3] 3. -q PI";
+        "[1, 2] 4. q 1, 2, 3 NE"
+      |]
+
+    let%test "JI" =
+      test [|
+        "[1] 1. p PI";
+        "[2] 2. q PI";
+        "[1, 2] 3. p & q 1, 2 JI";
+      |]
+
+    let%test "JE" =
+      test [|
+        "[1] 1. p & q PI";
+        "[1] 2. q 1 JE";
+      |]
+
+    let%test "DI" =
+      test [|
+        "[1] 1. p PI";
+        "[1] 2. q | p 1 DI";
+      |]
+
+    let%test "DE" =
+      test [|
+        "[1] 1. p | q PI";
+        "[2] 2. -p PI";
+        "[1, 2] 3. q 1, 2 DE";
+      |]
+  end
+)
+
+
 let () =
   Ppx_inline_test_lib.Runtime.exit ()

@@ -33,3 +33,12 @@ let free_variables formula =
   free_variables formula (Set.empty (module Char)) []
   |> Set.of_list (module Char)
   |> Set.to_list
+
+let is_instance big small =
+  let open Expression in
+  match big with
+  | Forall (v, phi) ->
+    equal phi small
+    || List.exists (free_variables small) ~f:(fun v ->
+        equal small @@ create_instance big v)
+  | _ -> false

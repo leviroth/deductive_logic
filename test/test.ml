@@ -263,8 +263,22 @@ let%test_module "FOL test" = (
 
         let%test "Multiple" =
           test "Ax Fy & Gz" ['y'; 'z']
-      end
-    )
+      end)
+
+    let%test_module "is_instance" = (
+      module
+      struct
+        let test = fun big small ->
+          let big, small = parse_string big, parse_string small in
+          Fol.is_instance big small
+
+        let%test "basic" = test "Ax Fx" "Fx"
+        let%test "changed variable" = test "Ax Fx" "Fy"
+        let%test "bound variable" = not @@ test "Ax Ax Fx" "Fx"
+        let%test "different variable" = not @@ test "Ax Fy" "Fx"
+        let%test "new variable would be bound" = not @@ test "Ax Ay Fx" "Ay Fy"
+        let%test "no instances" = test "Ax p" "p"
+      end)
 
   end)
 

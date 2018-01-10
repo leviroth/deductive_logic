@@ -3,14 +3,16 @@ open Base
 let create_instance general v =
   let open Expression in
   let rec create_instance formula u v bound =
+    let subexpr e = create_instance e u v bound in
     if Set.mem bound u || Set.mem bound v then formula
     else match formula with
       | Prop c -> Prop c
-      | Relation (f, l) -> Relation (f, List.map l ~f:(fun c -> if Char.equal c u then v else c))
-      | Neg e -> create_instance e u v bound
-      | Cond (e1, e2) -> Cond (create_instance e1 u v bound, create_instance e2 u v bound)
-      | Conj (e1, e2) -> Conj (create_instance e1 u v bound, create_instance e2 u v bound)
-      | Disj (e1, e2) -> Disj (create_instance e1 u v bound, create_instance e2 u v bound)
+      | Relation (f, l) ->
+        Relation (f, List.map l ~f:(fun c -> if Char.equal c u then v else c))
+      | Neg e -> subexpr e
+      | Cond (e1, e2) -> Cond (subexpr e1, subexpr e2)
+      | Conj (e1, e2) -> Conj (subexpr e1, subexpr e2)
+      | Disj (e1, e2) -> Disj (subexpr e1, subexpr e2)
       | Forall (w, e) -> Forall (w, create_instance e u v (Set.add bound w))
   in
   match general with

@@ -280,6 +280,9 @@ let%test_module "FOL test" = (
 
         let%test "Multiple" =
           test "Ax Fy & Gz" ['y'; 'z']
+
+        let%test "Proposition" =
+          test "Fx | p" ['x']
       end)
 
     let%test_module "is_instance" = (

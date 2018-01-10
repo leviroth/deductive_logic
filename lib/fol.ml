@@ -23,7 +23,7 @@ let free_variables formula =
   let open Expression in
   let rec free_variables formula bound acc =
     match formula with
-      | Prop c -> []
+      | Prop c -> acc
       | Relation (f, l) -> List.filter l ~f:(fun v -> not @@ Set.mem bound v) @ acc
       | Neg e -> free_variables e bound acc
       | Cond (e1, e2) | Conj (e1, e2) | Disj (e1, e2)

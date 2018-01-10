@@ -21,6 +21,8 @@
 %token JE
 %token DI
 %token DE
+%token UI
+%token UG
 %token EOF
 
 %right COND
@@ -75,6 +77,10 @@ rule:
  { Deduction.DI }
 | DE
  { Deduction.DE }
+| UI
+ { Deduction.UI }
+| UG
+ { Deduction.UG }
 
 expr_only:
 | e = expr; EOF; { e }

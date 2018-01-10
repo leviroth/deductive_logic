@@ -1,6 +1,6 @@
 open Base
 
-type rule = PI | CI | CE | NI | NE | JI | JE | DI | DE [@@deriving compare]
+type rule = PI | CI | CE | NI | NE | JI | JE | DI | DE | UI | UG [@@deriving compare]
 
 module Line = struct
   type t = { premises : Set.M(Int).t;
@@ -15,7 +15,7 @@ module Line = struct
     let expected_number =
       match line.rule with
       | PI -> 0
-      | JE | DI -> 1
+      | JE | DI | UI | UG -> 1
       | CI | CE | JI | DE -> 2
       | NI | NE -> 3
     in
@@ -106,6 +106,26 @@ module Line = struct
       && (match a.expr with
           | Disj (x, y) -> Expression.equal b.expr (Expression.Neg x)
                            || Expression.equal b.expr (Expression.Neg y)
+          | _ -> false)
+
+    | UI ->
+      let a = get_line deduction line.citations.(0) in
+      [%compare.equal: Set.M(Int).t] line.premises a.premises
+      && Fol.is_instance a.expr line.expr
+
+    | UG ->
+      let a = get_line deduction line.citations.(0) in
+      [%compare.equal: Set.M(Int).t] line.premises a.premises
+      && (match line.expr with
+          | Forall (v, e) ->
+            Expression.equal e a.expr
+            && let earlier_lines = Set.to_list a.premises
+                                   |> List.map ~f:(fun n ->
+                                       Array.get deduction (n - 1))
+            in
+            let free_variables = List.concat_map earlier_lines ~f:(
+                fun line -> Fol.free_variables line.expr) in
+            not @@ List.mem ~equal:Char.equal free_variables v
           | _ -> false))
 end
 

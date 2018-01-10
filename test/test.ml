@@ -222,6 +222,23 @@ let%test_module "Deduction test" = (
         "[2] 2. -p PI";
         "[1, 2] 3. q 1, 2 DE";
       |]
+
+    let%test "UI" =
+      test [|
+        "[1] 1. Ax Fx PI";
+        "[1] 2. Fx 1 UI";
+      |]
+
+    let%test "UG" =
+      test [|
+        "[1] 1. Fx PI";
+        "[]  2. Fx -> Fx 1, 1 CI";
+        "[] 2. Ax (Fx -> Fx) 2 UG";
+      |]
+      && not @@ test [|
+        "[1] 1. Fx PI";
+        "[1] 2. Ax Fx 1 UG"
+      |]
   end)
 
 let%test_module "FOL test" = (

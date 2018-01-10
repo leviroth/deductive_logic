@@ -29,6 +29,8 @@ rule read =
   | "JE"                         { JE }
   | "DI"                         { DI }
   | "DE"                         { DE }
+  | "UI"                         { UI }
+  | "UG"                         { UG }
   | "A" (lower as c)             { FORALL c }
   | (int as i)                   { INT (int_of_string i) }
   | (lower as c)                 { PROP c }

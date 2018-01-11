@@ -159,8 +159,8 @@ let%test_module "Deduction test" = (
     let test a =
       construct_deduction a
       |> Deduction.validate
-      |> function | Ok true -> true
-                  | Ok false | Error _ -> false
+      |> function | Ok () -> true
+                  | Error _ -> false
 
     let%test "PI" =
       test [|

@@ -11,7 +11,7 @@ let eol = '\n' | "\r\n"
 rule read =
   parse
   | white                        { read lexbuf }
-  | eol                          { read lexbuf }
+  | eol                          { EOL }
   | "->"                         { COND }
   | "&"                          { CONJ }
   | "|"                          { DISJ }

@@ -24,6 +24,7 @@
 %token UI
 %token UG
 %token EOF
+%token EOL
 
 %right COND
 %left DISJ
@@ -37,7 +38,7 @@
 %%
 
 deduction:
-| l = list(deduction_line); EOF;
+| l = list(terminated(deduction_line, EOL)); EOF;
   { Base.Array.of_list l }
 
 deduction_line_only:

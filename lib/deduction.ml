@@ -47,7 +47,7 @@ module Line = struct
     result_of_bool
       line
       ([%compare.equal: Set.M(Int).t] expected line.premises)
-      (lazy (Printf.sprintf "Incorrect premises on line %d" line.number))
+      (lazy "Incorrect premises")
 
   let correct deduction line =
     let open Result.Monad_infix in
@@ -67,7 +67,7 @@ module Line = struct
       check_premises expected_premises line >>= fun () ->
       result_of_bool
         (Expression.equal line.expr @@ Expression.Cond (a.expr, b.expr))
-        (lazy "Line does not match premises")
+        (lazy "Line does not match inputs")
 
     | CE ->
       let a = get_line deduction line.citations.(0) in
@@ -76,7 +76,7 @@ module Line = struct
       check_premises expected_premises line >>= fun () ->
       result_of_bool
         (Expression.equal if_a_then_line.expr @@ Expression.Cond (a.expr, line.expr))
-        (lazy "Line does not match premises")
+        (lazy "Line does not match inputs")
 
     | NI ->
       let a = get_line deduction line.citations.(0) in

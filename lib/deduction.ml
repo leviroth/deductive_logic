@@ -74,9 +74,15 @@ module Line = struct
       let if_a_then_line = get_line deduction line.citations.(1) in
       let expected_premises = Set.union a.premises if_a_then_line.premises in
       check_premises expected_premises line >>= fun () ->
-      result_of_bool
-        (Expression.equal if_a_then_line.expr @@ Expression.Cond (a.expr, line.expr))
-        (lazy "Line does not match inputs")
+      (match if_a_then_line.expr with
+       | Cond (ant, con) ->
+         result_of_bool
+           (Expression.equal ant a.expr)
+           (lazy "First input isn't the antecedent.") >>= fun () ->
+         result_of_bool
+           (Expression.equal con line.expr)
+           (lazy "Output isn't the consequent.")
+       | _ -> Error (line.number, "Second input isn't a conditional"))
 
     | NI ->
       let a = get_line deduction line.citations.(0) in

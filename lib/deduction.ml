@@ -11,6 +11,11 @@ module Line = struct
 
   let get_line deduction n = deduction.(n - 1)
 
+  let result_of_bool line b message =
+    match b with
+    | true -> Ok ()
+    | false -> Error (line.number, Lazy.force message)
+
   let correct_citation_count deduction line =
     let expected_number =
       match line.rule with
@@ -20,13 +25,12 @@ module Line = struct
       | NI | NE -> 3
     in
     let citation_count = Array.length line.citations in
-    if citation_count = expected_number
-    then Ok ()
-    else Error (line.number,
-                Printf.sprintf
-                  "Expected %d citations but received %d"
-                  expected_number
-                  citation_count)
+    result_of_bool line (citation_count = expected_number)
+      (lazy
+        (Printf.sprintf
+           "Expected %d citations but received %d"
+           expected_number
+           citation_count))
 
   let citations_exist deduction line =
     match Array.find line.citations ~f:(fun n -> n > Array.length deduction) with
@@ -38,11 +42,6 @@ module Line = struct
     let open Result.Monad_infix in
     correct_citation_count deduction line >>= fun () ->
     citations_exist deduction line
-
-  let result_of_bool line b message =
-    match b with
-    | true -> Ok ()
-    | false -> Error (line.number, Lazy.force message)
 
   let check_premises expected line =
     result_of_bool

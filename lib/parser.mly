@@ -32,8 +32,13 @@
 %nonassoc FORALL
 
 %start <Expression.t> expr_only
+%start <Deduction.t> deduction
 %start <Deduction.Line.t> deduction_line_only
 %%
+
+deduction:
+| l = list(deduction_line); EOF;
+  { Base.Array.of_list l }
 
 deduction_line_only:
 | l = deduction_line; EOF { l }

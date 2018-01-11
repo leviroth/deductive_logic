@@ -1,0 +1,8 @@
+(jbuild_version 1)
+
+(executable
+ ((name main)
+  (libraries (deductive_logic
+              base
+              stdio))
+  (preprocess (pps (ppx_jane)))))

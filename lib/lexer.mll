@@ -7,9 +7,11 @@ let lower = ['a' - 'z']
 let relation = ['B' - 'Z']
 let int = '-'? ['0'-'9'] ['0'-'9']*
 let white = [' ' '\t']+
+let eol = '\n' | "\r\n"
 rule read =
   parse
   | white                        { read lexbuf }
+  | eol                          { read lexbuf }
   | "->"                         { COND }
   | "&"                          { CONJ }
   | "|"                          { DISJ }

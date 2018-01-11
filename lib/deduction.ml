@@ -39,15 +39,16 @@ module Line = struct
     correct_citation_count deduction line >>= fun () ->
     citations_exist deduction line
 
-  let check_premises expected line =
-    match [%compare.equal: Set.M(Int).t] expected line.premises with
-    | true -> Ok ()
-    | false -> Error (line.number, Printf.sprintf "Incorrect premises on line %d" line.number)
-
   let result_of_bool line b message =
     match b with
     | true -> Ok ()
     | false -> Error (line.number, Lazy.force message)
+
+  let check_premises expected line =
+    result_of_bool
+      line
+      ([%compare.equal: Set.M(Int).t] expected line.premises)
+      (lazy (Printf.sprintf "Incorrect premises on line %d" line.number))
 
   let correct deduction line =
     let open Result.Monad_infix in
@@ -183,6 +184,4 @@ end
 type t = Line.t array
 
 let validate t =
-  Array.to_list t
-  |> List.map ~f:(Line.correct t)
-  |> Result.all_ignore
+  Array.fold_result t ~init:() ~f:(fun () l -> Line.correct t l)

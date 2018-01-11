@@ -12,7 +12,10 @@ let deduction_of_filename filename =
 let string_of_result =
   function
   | Ok () -> "Deduction is correct"
-  | Error (i, m) -> Printf.sprintf "Error on line %d: %s" i m
+  | Error l ->
+    l
+    |> List.map ~f:(fun (i, m) -> Printf.sprintf "Error on line %d: %s" i m)
+    |> String.concat ~sep:"\n"
 
 let () =
   let deduction =

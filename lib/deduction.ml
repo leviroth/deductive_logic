@@ -183,4 +183,6 @@ end
 type t = Line.t array
 
 let validate t =
-  Array.fold_result t ~init:() ~f:(fun () l -> Line.correct t l)
+  Array.to_list t
+  |> List.map ~f:(Line.correct t)
+  |> Result.combine_errors_unit

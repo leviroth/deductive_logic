@@ -1,0 +1,10 @@
+(jbuild_version 1)
+
+(executable
+ ((name main)
+  (libraries (deductive_logic
+              base
+              ppx_deriving_yojson.runtime
+              cohttp-lwt-unix
+              lwt))
+  (preprocess (pps (ppx_jane ppx_deriving_yojson)))))

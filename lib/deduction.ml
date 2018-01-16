@@ -1,6 +1,6 @@
 open Base
 
-type rule = PI | CI | CE | NI | NE | JI | JE | DI | DE | UI | UG [@@deriving compare]
+type rule = PI | CI | CE | NI | NE | JI | JE | DI | DE | UI | UG [@@deriving compare, yojson]
 
 module Line = struct
   type t = { assumptions : Set.M(Int).t;

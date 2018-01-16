@@ -3,8 +3,10 @@
 (library
  ((name deductive_logic)
   (flags (:standard -short-paths))
-  (libraries (base))
-  (preprocess (pps (ppx_jane)))))
+  (libraries (base
+              ppx_deriving_yojson.runtime))
+  (preprocess (pps (ppx_jane
+                    ppx_deriving_yojson)))))
 
 (ocamllex (lexer))
 

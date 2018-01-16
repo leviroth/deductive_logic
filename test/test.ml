@@ -39,7 +39,7 @@ let%test_module "Parser tests" = (
       let test_cases = [
         "[1] 1. p -> q PI",
         Deduction.Line.{
-          premises = Set.singleton (module Int) 1;
+          assumptions = Set.singleton (module Int) 1;
           number = 1;
           expr = parse_string "p -> q";
           citations = [| |];
@@ -48,7 +48,7 @@ let%test_module "Parser tests" = (
 
         "[2] 3. p -> q 1, 2 CI",
         Deduction.Line.{
-          premises = Set.singleton (module Int) 2;
+          assumptions = Set.singleton (module Int) 2;
           number = 3;
           expr = parse_string "p -> q";
           citations = [| 1; 2 |];
@@ -57,7 +57,7 @@ let%test_module "Parser tests" = (
 
         "[2] 3. Ax Fx | p 1, 2 CI",
         Deduction.Line.{
-          premises = Set.singleton (module Int) 2;
+          assumptions = Set.singleton (module Int) 2;
           number = 3;
           expr = parse_string "Ax Fx | p";
           citations = [| 1; 2 |];
@@ -133,19 +133,19 @@ let%test_module "Model tests" = (
       && List.length models = 4
 
     let%test "Implies (positive)" =
-      let premises = List.map ~f:parse_string ["p"; "p -> q"] in
+      let assumptions = List.map ~f:parse_string ["p"; "p -> q"] in
       let conclusion = parse_string "q" in
-      Model.implies premises conclusion
+      Model.implies assumptions conclusion
 
     let%test "Implies (FOL)" =
-      let premises = List.map ~f:parse_string ["Fx"; "Fx -> Gx"] in
+      let assumptions = List.map ~f:parse_string ["Fx"; "Fx -> Gx"] in
       let conclusion = parse_string "Gx" in
-      Model.implies premises conclusion
+      Model.implies assumptions conclusion
 
     let%test "Implies (negative)" =
-      let premises = List.map ~f:parse_string ["p"; "p -> q"] in
+      let assumptions = List.map ~f:parse_string ["p"; "p -> q"] in
       let conclusion = parse_string "-q" in
-      not @@ Model.implies premises conclusion
+      not @@ Model.implies assumptions conclusion
   end)
 
 let%test_module "Deduction test" = (

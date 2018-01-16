@@ -45,14 +45,14 @@ deduction_line_only:
 | l = deduction_line; EOF { l }
 
 deduction_line:
-| p = premises; n = number; e = expr; c = citations; r = rule;
-  { Deduction.Line.{premises = p;
+| a = assumptions; n = number; e = expr; c = citations; r = rule;
+  { Deduction.Line.{assumptions = a;
                     number = n;
                     expr = e;
                     citations = c;
                     rule = r; }}
 
-premises:
+assumptions:
 | LSQUARE l = separated_list(COMMA, INT) RSQUARE
   { Base.Set.of_list (module Base.Int) l }
 

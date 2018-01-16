@@ -3,7 +3,7 @@ open Base
 type rule = PI | CI | CE | NI | NE | JI | JE | DI | DE | UI | UG [@@deriving compare]
 
 module Line = struct
-  type t = { premises : Set.M(Int).t;
+  type t = { assumptions : Set.M(Int).t;
              number : int;
              expr : Expression.t;
              citations : int array;
@@ -43,11 +43,11 @@ module Line = struct
     correct_citation_count deduction line >>= fun () ->
     citations_exist deduction line
 
-  let check_premises expected line =
+  let check_assumptions expected line =
     result_of_bool
       line
-      ([%compare.equal: Set.M(Int).t] expected line.premises)
-      (lazy "Incorrect premises")
+      ([%compare.equal: Set.M(Int).t] expected line.assumptions)
+      (lazy "Incorrect assumptions")
 
   let correct deduction line =
     let open Result.Monad_infix in
@@ -55,16 +55,16 @@ module Line = struct
     validate_citations deduction line >>= fun () ->
     match line.rule with
     | PI ->
-      let expected_premises = Set.singleton (module Int) line.number in
-      check_premises expected_premises line
+      let expected_assumptions = Set.singleton (module Int) line.number in
+      check_assumptions expected_assumptions line
 
     | CI ->
       let a = get_line deduction line.citations.(0) in
       let b = get_line deduction line.citations.(1) in
-      let expected_premises =
-        Set.union a.premises b.premises |> fun s -> Set.remove s a.number
+      let expected_assumptions =
+        Set.union a.assumptions b.assumptions |> fun s -> Set.remove s a.number
       in
-      check_premises expected_premises line >>= fun () ->
+      check_assumptions expected_assumptions line >>= fun () ->
       (match line.expr with
        | Cond (ant, con) ->
          result_of_bool
@@ -78,8 +78,8 @@ module Line = struct
     | CE ->
       let a = get_line deduction line.citations.(0) in
       let if_a_then_line = get_line deduction line.citations.(1) in
-      let expected_premises = Set.union a.premises if_a_then_line.premises in
-      check_premises expected_premises line >>= fun () ->
+      let expected_assumptions = Set.union a.assumptions if_a_then_line.assumptions in
+      check_assumptions expected_assumptions line >>= fun () ->
       (match if_a_then_line.expr with
        | Cond (ant, con) ->
          result_of_bool
@@ -94,48 +94,48 @@ module Line = struct
       let a = get_line deduction line.citations.(0) in
       let not_a = get_line deduction line.citations.(1) in
       let c = get_line deduction line.citations.(2) in
-      let expected_premises =
-        Set.union_list (module Int) [a.premises; not_a.premises; c.premises]
+      let expected_assumptions =
+        Set.union_list (module Int) [a.assumptions; not_a.assumptions; c.assumptions]
         |> fun s -> Set.remove s c.number
       in
-      check_premises expected_premises line >>= fun () ->
+      check_assumptions expected_assumptions line >>= fun () ->
       result_of_bool
         (Expression.equal not_a.expr @@ Expression.Neg a.expr)
-        (lazy "Premises are not negations of each other") >>= fun () ->
+        (lazy "Inputs are not negations of each other") >>= fun () ->
       result_of_bool
         (Expression.equal line.expr @@ Expression.Neg c.expr)
-        (lazy "Line is not the negation of the premise")
+        (lazy "Output is not the negation of the last input")
 
     | NE ->
       let a = get_line deduction line.citations.(0) in
       let not_a = get_line deduction line.citations.(1) in
       let not_line = get_line deduction line.citations.(2) in
-      let expected_premises =
+      let expected_assumptions =
         Set.union_list
           (module Int)
-          [a.premises; not_a.premises; not_line.premises]
+          [a.assumptions; not_a.assumptions; not_line.assumptions]
         |> fun s -> Set.remove s not_line.number
       in
-      check_premises expected_premises line >>= fun () ->
+      check_assumptions expected_assumptions line >>= fun () ->
       result_of_bool
         (Expression.equal not_a.expr @@ Expression.Neg a.expr)
-        (lazy "Premises are not negations of each other") >>= fun () ->
+        (lazy "Inputs are not negations of each other") >>= fun () ->
       result_of_bool
         (Expression.equal not_line.expr @@ Expression.Neg line.expr)
-        (lazy "Premise is not the negation of the line")
+        (lazy "Last input is not the negation of the output")
 
     | JI ->
       let a = get_line deduction line.citations.(0) in
       let b = get_line deduction line.citations.(1) in
-      let expected_premises = Set.union a.premises b.premises in
-      check_premises expected_premises line >>= fun () ->
+      let expected_assumptions = Set.union a.assumptions b.assumptions in
+      check_assumptions expected_assumptions line >>= fun () ->
       result_of_bool
         (Expression.equal line.expr @@ Expression.Conj (a.expr, b.expr))
-        (lazy "This isn't the conjunction of the premises")
+        (lazy "Output isn't the conjunction of the inputs")
 
     | JE ->
       let a = get_line deduction line.citations.(0) in
-      check_premises a.premises line >>= fun () ->
+      check_assumptions a.assumptions line >>= fun () ->
       result_of_bool
         (match a.expr with
          | Conj (x, y) -> Expression.equal line.expr x
@@ -145,7 +145,7 @@ module Line = struct
 
     | DI ->
       let a = get_line deduction line.citations.(0) in
-      check_premises a.premises line >>= fun () ->
+      check_assumptions a.assumptions line >>= fun () ->
       result_of_bool
         (match line.expr with
          | Disj (x, y) -> Expression.equal a.expr x
@@ -156,8 +156,8 @@ module Line = struct
     | DE ->
       let a = get_line deduction line.citations.(0) in
       let b = get_line deduction line.citations.(1) in
-      let expected_premises = Set.union a.premises b.premises in
-      check_premises expected_premises line >>= fun () ->
+      let expected_assumptions = Set.union a.assumptions b.assumptions in
+      check_assumptions expected_assumptions line >>= fun () ->
       result_of_bool
         (match a.expr with
          | Disj (x, y) -> Expression.equal b.expr (Expression.Neg x)
@@ -167,20 +167,20 @@ module Line = struct
 
     | UI ->
       let a = get_line deduction line.citations.(0) in
-      check_premises a.premises line >>= fun () ->
+      check_assumptions a.assumptions line >>= fun () ->
       result_of_bool
         (Fol.is_instance a.expr line.expr)
         (lazy "That isn't an instance")
 
     | UG ->
       let a = get_line deduction line.citations.(0) in
-      check_premises a.premises line >>= fun () ->
+      check_assumptions a.assumptions line >>= fun () ->
       (match line.expr with
        | Forall (v, e) ->
          result_of_bool
            (Expression.equal e a.expr)
            (lazy "Generalization doesn't match the premise") >>= fun () ->
-         let earlier_lines = Set.to_list a.premises
+         let earlier_lines = Set.to_list a.assumptions
                              |> List.map ~f:(fun n ->
                                  Array.get deduction (n - 1))
          in
